@@ -1,6 +1,4 @@
-# Better-personal-finance
-
-'# Better Personal Finance
+# Better Personal Finance
 
 > A self-hosted, privacy-first personal finance manager. No cloud accounts. No telemetry. Full data sovereignty.
 
