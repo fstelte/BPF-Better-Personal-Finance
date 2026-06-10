@@ -1,0 +1,33 @@
+# Compose override — behind an external reverse proxy (nginx, Traefik, Caddy, etc.)
+#
+# Your external proxy is responsible for TLS termination and forwarding requests
+# to this stack. The bundled Caddy service is disabled and the web container
+# exposes a port on the Docker host so your proxy can reach it.
+#
+# Usage:
+#   docker compose -f docker-compose.yml -f docker-compose.external-proxy.yml up -d
+#
+# Required additions to .env:
+#   WEB_ORIGIN=https://finance.example.com   # full origin the browser uses (scheme + host)
+#   WEB_PORT=3000                             # host port your external proxy forwards to
+#
+# Your proxy should forward all requests for the domain to:
+#   http://<docker-host>:${WEB_PORT}
+# The /api/* path is handled inside the web container via Next.js rewrites
+# (proxied to the internal Fastify API — never exposed to the host).
+
+services:
+  caddy:
+    # Assign a profile that is never activated — effectively disables this service.
+    # TLS termination is handled by your external reverse proxy instead.
+    profiles: [_disabled]
+
+  web:
+    ports:
+      - "${WEB_PORT:-3000}:3000"
+
+  api:
+    environment:
+      # Override the CORS / WebAuthn origin with the URL the browser uses.
+      # Must match exactly: scheme + host + optional non-standard port.
+      - WEB_ORIGIN=${WEB_ORIGIN}
